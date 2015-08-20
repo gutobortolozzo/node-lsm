@@ -105,17 +105,6 @@ module.exports = function (createSST, createMemtable, createManifest) {
                     var tables = db.snapshot();
 
                     (function next(i) {
-                        //if we ran out of tables, err
-                        //gets need to use snapshots too...
-                        //but since they will return from the memtable
-                        //synchronously they will only need to track the SSTs
-                        //which probably means they can all share a snapshot
-                        //unless there is a compaction happening.
-
-                        //just have an SST snapshot,
-                        //keep a count of current gets
-                        //and don't delete any ssts until it's freed.
-
                         if (!tables[i])
                             return reject(new Error('Not Found'));
 
@@ -126,7 +115,6 @@ module.exports = function (createSST, createMemtable, createManifest) {
                     })(0)
                 });
             },
-            //only write to the FIRST table.
             put: function (key, value) {
                 return new Promise(function(resolve, reject){
                     memtable.put(key, value, function (err) {
@@ -137,11 +125,15 @@ module.exports = function (createSST, createMemtable, createManifest) {
                     });
                 });
             },
-            del: function (del, cb) {
-                return memtable.del(key, function (err) {
-                    if (!(++counter % 1000)) db.compact()
-                    cb(err)
-                })
+            del: function (key) {
+                return new Promise(function(resolve, reject){
+                    memtable.del(key, function (err) {
+                        if (!(++counter % 1000))
+                            db.compact();
+
+                        !!err ? reject(err) : resolve();
+                    });
+                });
             },
             batch: function (ops, cb) {
                 return memtable.batch(ops, function (err) {
