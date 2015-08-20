@@ -100,28 +100,31 @@ module.exports = function (createSST, createMemtable, createManifest) {
                 return tables
             },
             //step through all the databases, and look for next
-            get: function (key, cb) {
-                var tables = db.snapshot()
-                    ;
-                (function next(i) {
-                    //if we ran out of tables, err
-                    //gets need to use snapshots too...
-                    //but since they will return from the memtable
-                    //synchronously they will only need to track the SSTs
-                    //which probably means they can all share a snapshot
-                    //unless there is a compaction happening.
+            get: function (key) {
+                return new Promise(function(resolve, reject){
+                    var tables = db.snapshot();
 
-                    //just have an SST snapshot,
-                    //keep a count of current gets
-                    //and don't delete any ssts until it's freed.
+                    (function next(i) {
+                        //if we ran out of tables, err
+                        //gets need to use snapshots too...
+                        //but since they will return from the memtable
+                        //synchronously they will only need to track the SSTs
+                        //which probably means they can all share a snapshot
+                        //unless there is a compaction happening.
 
-                    if (!tables[i]) return cb(new Error('not found'))
-                    tables[i].get(key, function (err, value) {
-                        if (err) return next(i + 1)
-                        return cb(null, value)
-                    })
-                })(0)
-                return db
+                        //just have an SST snapshot,
+                        //keep a count of current gets
+                        //and don't delete any ssts until it's freed.
+
+                        if (!tables[i])
+                            return reject(new Error('Not Found'));
+
+                        tables[i].get(key, function (err, value) {
+                            if (err) return next(i + 1);
+                            return resolve(value);
+                        })
+                    })(0)
+                });
             },
             //only write to the FIRST table.
             put: function (key, value) {
@@ -130,7 +133,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
                         if (!(++counter % 1000))
                             db.compact();
 
-                        !!err ? reject(err) : resolve();
+                        !!err ? reject(err) : resolve(value);
                     });
                 });
             },
