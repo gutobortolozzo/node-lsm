@@ -103,7 +103,6 @@ module.exports = function (createSST, createMemtable, createManifest) {
             get: function (key) {
                 return new Promise(function(resolve, reject){
                     var tables = db.snapshot();
-
                     (function next(i) {
                         if (!tables[i])
                             return reject(new Error('Not Found'));
@@ -127,7 +126,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
             },
             del: function (key) {
                 return new Promise(function(resolve, reject){
-                    memtable.del(key, function (err) {
+                    memtable.del(key, '', function (err) {
                         if (!(++counter % 1000))
                             db.compact();
 
