@@ -18,7 +18,6 @@
   },
   "devDependencies": {
     "rimraf": "~2.2.6",
-    "pull-paramap": "~1.0.5",
     "tape": "~2.12.3",
     "osenv": "~0.0.3"
   },
