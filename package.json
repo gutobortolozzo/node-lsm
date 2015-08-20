@@ -8,13 +8,14 @@
     "url": "git://github.com/dominictarr/goatdb.git"
   },
   "dependencies": {
-    "mkdirp": "~0.3.5",
-    "pull-stream": "~2.22.2",
+    "bluebird": "^2.9.34",
     "json-logdb": "~2.1.0",
     "json-sst": "~1.0.2",
     "kiddb": "~0.0.2",
+    "mkdirp": "~0.3.5",
     "pull-merge": "~0.0.2",
-    "pull-paramap": "~1.0.5"
+    "pull-paramap": "~1.0.5",
+    "pull-stream": "~2.22.2"
   },
   "devDependencies": {
     "mocha": "^2.2.5",
@@ -23,7 +24,7 @@
     "should": "^7.0.4"
   },
   "scripts": {
-    "test": "set -e; for t in test/*.js; do node $t; done"
+    "test": "node test/main.js"
   },
   "author": "'Dominic Tarr' <dominic.tarr@gmail.com> (http://dominictarr.com)",
   "license": "MIT"
