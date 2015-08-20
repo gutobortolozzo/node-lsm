@@ -17,9 +17,10 @@
     "pull-paramap": "~1.0.5"
   },
   "devDependencies": {
+    "mocha": "^2.2.5",
+    "osenv": "~0.0.3",
     "rimraf": "~2.2.6",
-    "tape": "~2.12.3",
-    "osenv": "~0.0.3"
+    "should": "^7.0.4"
   },
   "scripts": {
     "test": "set -e; for t in test/*.js; do node $t; done"
