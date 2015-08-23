@@ -30,7 +30,7 @@
     "should": "^7.0.4"
   },
   "scripts": {
-    "test": "rm -rf /tmp/goatdb-example/ && node test/main.js && ls -lh /tmp/goatdb-example/"
+    "test": "rm -rf /tmp/tbd/ && node test/main.js && ls -lh /tmp/tbd/"
   },
   "author": "'Dominic Tarr' <dominic.tarr@gmail.com> (http://dominictarr.com)",
   "license": "MIT"

@@ -35,57 +35,57 @@ module.exports = function (createSST, createMemtable, createManifest) {
         }
 
         return db = {
-            //should i separate all this stuff out so that
-            //you can simulate the database all in memory?
-            open: function (opts, cb) {
-                if (!cb) cb = opts, opts = {}
-                mkdirp(location, function (err) {
-                    if (err) return cb(err)
-                    manifest = createManifest(path.join(location, 'manifest.json'))
-                    manifest.open(function (err) {
-                        if (err) return cb(err)
-                        //if the manifest is empty create an empty memory table.
-                        if (isEmpty(manifest.data)) {
-                            seq = 1
-                            var filename = path.join(location, 'log-' + pad(seq) + '.json')
-                            var _memtable = createMemtable(filename)
-                            manifest.update({tables: ['log-' + pad(seq) + '.json'], seq: seq}, function (err) {
-                                if (err) return cb(err)
-                                _memtable.open(function (err) {
-                                    if (err) cb(err)
-                                    memtable = _memtable
-                                    _snapshot = [memtable]
-                                    cb(null, db)
+            open: function (opts) {
+                return new Promise(function(resolve, reject){
+                    mkdirp(location, function (err) {
+                        if (err)
+                            return reject(err);
+
+                        manifest = createManifest(path.join(location, 'manifest.json'));
+                        manifest.open(function (err) {
+                            if (err) return cb(err);
+                            if (isEmpty(manifest.data)) {
+                                seq = 1;
+                                var filename = path.join(location, 'log-' + pad(seq) + '.json');
+                                var _memtable = createMemtable(filename);
+                                manifest.update({tables: ['log-' + pad(seq) + '.json'], seq: seq}, function (err) {
+                                    if (err) return reject(err);
+                                    _memtable.open(function (err) {
+                                        if (err) reject(err);
+                                        memtable = _memtable;
+                                        _snapshot = [memtable];
+                                        resolve()
+                                    })
                                 })
-                            })
-                        } else {
-                            //open all the tables.
-                            var _tables = manifest.data.tables || []
-                            var n = tables.length
-                            var _seq = 0
+                            } else {
+                                //open all the tables.
+                                var _tables = manifest.data.tables || [];
+                                var n = tables.length;
+                                var _seq = 0;
 
-                            _tables.forEach(function (name, i) {
-                                var m = /^(log|sst)-(\d+)\.json$/.exec(name)
-                                var type = m[1], table
-                                _seq = Math.max(m[2], _seq)
+                                _tables.forEach(function (name, i) {
+                                    var m = /^(log|sst)-(\d+)\.json$/.exec(name);
+                                    var type = m[1], table;
+                                    _seq = Math.max(m[2], _seq);
 
-                                var create = type == 'log' ? createMemtable : createSST
-                                var table = tables[i] = create(path.join(location, name))
+                                    var create = type == 'log' ? createMemtable : createSST;
+                                    var table = tables[i] = create(path.join(location, name));
 
-                                table.open(next)
-                            })
-                            function next(err) {
-                                if (err) return n = -1, cb(err)
-                                if (--n) return
-                                seq = _seq + 1
-                                db.nextSnapshot(tables)
-                                memtable = tables[0]
-                                cb(null, db)
+                                    table.open(next)
+                                });
+
+                                function next(err) {
+                                    if (err) return n = -1, cb(err);
+                                    if (--n) return;
+                                    seq = _seq + 1;
+                                    db.nextSnapshot(tables);
+                                    memtable = tables[0];
+                                    resolve();
+                                }
                             }
-                        }
+                        })
                     })
-                })
-                return db
+                });
             },
             //get the current snapshot.
             nextSnapshot: function (ary) {
@@ -99,7 +99,6 @@ module.exports = function (createSST, createMemtable, createManifest) {
                 }
                 return tables
             },
-            //step through all the databases, and look for next
             get: function (key) {
                 return new Promise(function(resolve, reject){
                     var tables = db.snapshot();
