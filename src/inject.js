@@ -1,23 +1,22 @@
-var compact = require('./compact')
-var createSST = require('./sst')
-var mem = require('./mem')
-var mkdirp = require('mkdirp')
-var path = require('path')
-var merge = require('pull-merge')
-var u = require('./util')
-var zeros = '00000000'
+var compact = require('./compact');
+var mem = require('./mem');
+var mkdirp = require('mkdirp');
+var path = require('path');
+var merge = require('pull-merge');
+var u = require('./util');
+var zeros = '0000000000';
 var Promise = require('bluebird');
 
-var pull = require('pull-stream')
-var para = require('pull-paramap')
+var pull = require('pull-stream');
+var para = require('pull-paramap');
 
 function pad(n) {
-    n = n.toString()
-    return zeros.substring(n.length) + n
+    n = n.toString();
+    return zeros.substring(n.length) + n;
 }
 
 function isEmpty(o) {
-    if (null == o) return true
+    if (null == o) return true;
     for (var k in o)
         return false
     return true
@@ -26,9 +25,20 @@ function isEmpty(o) {
 module.exports = function (createSST, createMemtable, createManifest) {
 
     return function (location, opts) {
-        var memtable = mem(), counter = 0, db, compacting = false, _snapshot
+
+        var opts = opts || {};
+
+        var memtable = mem(),
+            counter = 0,
+            db,
+            compacting = false,
+            _snapshot;
+
         var tables = tables || [memtable]
-        var manifest, tables, seq
+        var manifest, tables,
+            seq;
+
+        var opertationsThreshold = opts.threshold || 1000;
 
         function nextTableName(type) {
             return type + '-' + pad(++seq) + '.json'
@@ -58,7 +68,6 @@ module.exports = function (createSST, createMemtable, createManifest) {
                                     })
                                 })
                             } else {
-                                //open all the tables.
                                 var _tables = manifest.data.tables || [];
                                 var n = tables.length;
                                 var _seq = 0;
@@ -75,7 +84,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
                                 });
 
                                 function next(err) {
-                                    if (err) return n = -1, cb(err);
+                                    if (err) return n = -1, reject(err);
                                     if (--n) return;
                                     seq = _seq + 1;
                                     db.nextSnapshot(tables);
@@ -87,7 +96,6 @@ module.exports = function (createSST, createMemtable, createManifest) {
                     })
                 });
             },
-            //get the current snapshot.
             nextSnapshot: function (ary) {
                 _snapshot = ary
                 return db
@@ -116,7 +124,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
             put: function (key, value) {
                 return new Promise(function(resolve, reject){
                     memtable.put(key, value, function (err) {
-                        if (!(++counter % 1000))
+                        if (!(++counter % opertationsThreshold))
                             db.compact();
 
                         !!err ? reject(err) : resolve(value);
@@ -126,7 +134,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
             del: function (key) {
                 return new Promise(function(resolve, reject){
                     memtable.del(key, '', function (err) {
-                        if (!(++counter % 1000))
+                        if (!(++counter % opertationsThreshold))
                             db.compact();
 
                         !!err ? reject(err) : resolve();
@@ -135,7 +143,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
             },
             batch: function (ops, cb) {
                 return memtable.batch(ops, function (err) {
-                    if (!(++counter % 1000)) db.compact()
+                    if (!(++counter % opertationsThreshold)) db.compact();
                     cb(err)
                 })
             },
@@ -161,7 +169,6 @@ module.exports = function (createSST, createMemtable, createManifest) {
                 )
 
                 var stream = tables[0].createReadStream(opts)
-                console.log('start', tables[0].location)
                 for (var i = 1; i < tables.length; i++) {
                     console.log('merge', tables[i].location)
                     stream = merge(tables[i].createReadStream(opts), stream, u.compare)
@@ -245,4 +252,4 @@ module.exports = function (createSST, createMemtable, createManifest) {
             }
         }
     }
-}
+};

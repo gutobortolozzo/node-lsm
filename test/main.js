@@ -12,14 +12,3 @@ db.open()
     .then(function(result){
         console.log(result);
     });
-
-db.open()
-    .then(function(){
-        return db.put("12345", "Tchau");
-    })
-    .then(function(){
-        return db.get("12345");
-    })
-    .then(function(result){
-        console.log(result);
-    });
