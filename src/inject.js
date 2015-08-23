@@ -61,10 +61,10 @@ module.exports = function (createSST, createMemtable, createManifest) {
                                 manifest.update({tables: ['log-' + pad(seq) + '.json'], seq: seq}, function (err) {
                                     if (err) return reject(err);
                                     _memtable.open(function (err) {
-                                        if (err) reject(err);
+                                        if (err) return reject(err);
                                         memtable = _memtable;
                                         _snapshot = [memtable];
-                                        resolve()
+                                        return resolve();
                                     })
                                 })
                             } else {
@@ -74,23 +74,29 @@ module.exports = function (createSST, createMemtable, createManifest) {
 
                                 _tables.forEach(function (name, i) {
                                     var m = /^(log|sst)-(\d+)\.json$/.exec(name);
-                                    var type = m[1], table;
+                                    var type = m[1];
                                     _seq = Math.max(m[2], _seq);
 
                                     var create = type == 'log' ? createMemtable : createSST;
                                     var table = tables[i] = create(path.join(location, name));
 
-                                    table.open(next)
+                                    table.open(next);
                                 });
 
                                 function next(err) {
-                                    if (err) return n = -1, reject(err);
+                                    if (err){
+                                        n = -1;
+                                        return reject(err);
+                                    }
                                     if (--n) return;
                                     seq = _seq + 1;
                                     db.nextSnapshot(tables);
                                     memtable = tables[0];
-                                    resolve();
                                 }
+
+                                Promise.delay(1000).then(function(){
+                                    resolve();
+                                })
                             }
                         })
                     })
