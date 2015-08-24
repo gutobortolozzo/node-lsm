@@ -30,7 +30,7 @@
     "should": "^7.0.4"
   },
   "scripts": {
-    "test": "rm -rf /tmp/tbd/ && node test/main.js && ls -lh /tmp/tbd/"
+    "test": "rm -rf /tmp/tbd/ && ./node_modules/.bin/mocha --recursive test/"
   },
   "author": "'Dominic Tarr' <dominic.tarr@gmail.com> (http://dominictarr.com)",
   "license": "MIT"
