@@ -6,7 +6,7 @@ var db = GoatDB('/tmp/tbd', {
 
 describe('PUT', function() {
 
-    beforeEach(function(){
+    before(function(){
         return db.open();
     });
 
