@@ -3,9 +3,9 @@ var pull = require('pull-stream')
 var next = setImmediate || process.nextTick
 
 module.exports = function () {
-    var store = {}
-    var keys = []
-    var db
+    var store = {};
+    var keys = [];
+    var db;
     return db = {
         size: 0,
         level: 1,
@@ -18,10 +18,10 @@ module.exports = function () {
             })
         },
         put: function (key, value, cb) {
-            store[key] = value
-            keys.push(key)
-            keys.sort()
-            db.size++
+            store[key] = value;
+            keys.push(key);
+            keys.sort();
+            db.size++;
             next(function () {
                 cb()
             })
@@ -35,7 +35,7 @@ module.exports = function () {
 //      cb()
 //    },
         createReadStream: function (opts) {
-            var gt = opts && opts.gt
+            var gt = opts && opts.gt;
             return pull.values(keys.filter(function (e) {
                 return gt ? e.key > gt : true
             }).map(function (key) {
@@ -47,4 +47,4 @@ module.exports = function () {
             }))
         }
     }
-}
+};
