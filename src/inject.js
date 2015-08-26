@@ -1,5 +1,4 @@
 var compact = require('./compact');
-var mem = require('./mem');
 var mkdirp = require('mkdirp');
 var path = require('path');
 var merge = require('pull-merge');
@@ -28,13 +27,11 @@ module.exports = function (createSST, createMemtable, createManifest) {
 
         var opts = opts || {};
 
-        var memtable = mem(),
-            counter = 0,
+        var counter = 0,
             db,
             compacting = false,
             _snapshot;
 
-        var tables = tables || [memtable]
         var manifest, tables, seq;
 
         var opertationsThreshold = opts.threshold || 1000;
