@@ -8,7 +8,7 @@ describe('GET', function() {
 
     before(function(){
         return db.open().then(function(){
-            return db.put('#12345', 'hello')
+            return db.put('#12345', 'hello');
         });
     });
 
@@ -16,7 +16,7 @@ describe('GET', function() {
         utils.clear(done);
     });
 
-    describe('save one value', function() {
+    describe('must get one value', function() {
 
         it('should get value #12345', function(){
             return db.get("#12345").then(function(value){
