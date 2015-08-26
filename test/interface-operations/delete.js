@@ -1,6 +1,6 @@
 require('should');
 var utils = require(process.cwd()+'/test/utils/test-commons');
-var GoatDB = require('../index.js');
+var GoatDB = require('../../index.js');
 
 var db = GoatDB(utils.testDirectory, utils.options);
 
