@@ -35,8 +35,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
             _snapshot;
 
         var tables = tables || [memtable]
-        var manifest, tables,
-            seq;
+        var manifest, tables, seq;
 
         var opertationsThreshold = opts.threshold || 1000;
 

@@ -1,4 +1,4 @@
-var pull = require('pull-stream')
+var pull = require('pull-stream');
 
 var next = setImmediate || process.nextTick;
 
