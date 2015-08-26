@@ -17,13 +17,13 @@ describe('PUT', function() {
     describe('save one value', function() {
 
         it('should save one value without error', function(){
-            return db.put("123", "Oi");
+            return db.put("123", "hello");
         });
 
         it('should save two values without error', function(){
-            return db.put("123", "Name")
+            return db.put("123", "name")
                 .then(function(){
-                    return db.put('1234', 'Value');
+                    return db.put('1234', 'value');
                 });
         });
     });

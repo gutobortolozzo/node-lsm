@@ -21,7 +21,7 @@ describe('DELETE', function() {
         });
 
         it('should delete one value without error', function(){
-            return db.del("123", "Name");
+            return db.del("123");
         });
 
         it('should delete one value and try to search for it', function(){
