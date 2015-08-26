@@ -48,5 +48,12 @@ describe('LOG', function() {
         it('contains only 2 files', function () {
             utils.listFilesInsideTestDirectory().length.should.be.eql(4);
         });
+
+        it('search for value to test integrite', function () {
+            return db.get('#'+utils.options.threshold)
+                .then(function(value){
+                    value.should.be.eql('hello '+utils.options.threshold);
+                })
+        });
     });
 });
