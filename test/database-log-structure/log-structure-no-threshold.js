@@ -1,5 +1,6 @@
 require('should');
 var utils = require(process.cwd()+'/test/utils/test-commons');
+var Promise = require('bluebird');
 var GoatDB = require('../../index.js');
 
 var db = GoatDB(utils.testDirectory, utils.options);
@@ -28,6 +29,10 @@ describe('LOG', function() {
         it('contains manifest file', function(){
             var files = utils.listFilesInsideTestDirectory();
             files.should.containEql('manifest.json');
+        });
+
+        it('contains only 2 files', function(){
+            utils.listFilesInsideTestDirectory().length.should.be.eql(2);
         });
     });
 });
