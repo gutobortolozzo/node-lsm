@@ -21,7 +21,17 @@ describe('DELETE', function() {
         });
 
         it('should delete one value without error', function(){
-            return db.del("123", "Name")
+            return db.del("123", "Name");
+        });
+
+        it('should delete one value and try to search for it', function(){
+            return db.del("123")
+                .then(function(){
+                    return db.get('123');
+                })
+                .catch(function(err){
+                    err.message.should.be.eql('Not Found');
+                });
         });
     });
 });
