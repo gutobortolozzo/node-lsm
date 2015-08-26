@@ -26,11 +26,11 @@
   "devDependencies": {
     "mocha": "^2.2.5",
     "osenv": "~0.0.3",
-    "rimraf": "~2.2.6",
+    "rimraf": "^2.4.2",
     "should": "^7.0.4"
   },
   "scripts": {
-    "test": "rm -rf /tmp/tbd/ && ./node_modules/.bin/mocha --recursive test/"
+    "test": "./node_modules/.bin/mocha --recursive test/"
   },
   "author": "'Dominic Tarr' <dominic.tarr@gmail.com> (http://dominictarr.com)",
   "license": "MIT"
