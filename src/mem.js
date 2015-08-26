@@ -1,6 +1,6 @@
 var pull = require('pull-stream')
 
-var next = setImmediate || process.nextTick
+var next = setImmediate || process.nextTick;
 
 module.exports = function () {
     var store = {};
@@ -12,10 +12,11 @@ module.exports = function () {
         type: 'mem',
         store: store,
         get: function (key, cb) {
-            if (!store[key]) return cb(new Error('not found'))
+            if (!store[key])
+                return cb(new Error('not found'));
             next(function () {
-                cb(null, store[key])
-            })
+                cb(null, store[key]);
+            });
         },
         put: function (key, value, cb) {
             store[key] = value;
@@ -26,14 +27,14 @@ module.exports = function () {
                 cb()
             })
         },
-//LATER
-//    del: function (key, cb) {
-//      if(!store[key]) return cb(new Error('not found'))
-//      var i = keys.indexOf(key)
-//      keys.splice(i, 1)
-//      delete store[key]
-//      cb()
-//    },
+        del: function (key, cb) {
+          if(!store[key])
+              return cb(new Error('not found'));
+          var i = keys.indexOf(key);
+          keys.splice(i, 1);
+          delete store[key];
+          cb();
+        },
         createReadStream: function (opts) {
             var gt = opts && opts.gt;
             return pull.values(keys.filter(function (e) {
