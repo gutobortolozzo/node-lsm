@@ -5,21 +5,8 @@ var merge = require('pull-merge');
 var u = require('./util');
 var zeros = '0000000000';
 var Promise = require('bluebird');
-
 var pull = require('pull-stream');
 var para = require('pull-paramap');
-
-function pad(n) {
-    n = n.toString();
-    return zeros.substring(n.length) + n;
-}
-
-function isEmpty(o) {
-    if (null == o) return true;
-    for (var k in o)
-        return false
-    return true
-}
 
 module.exports = function (createSST, createMemtable, createManifest) {
 
@@ -38,6 +25,17 @@ module.exports = function (createSST, createMemtable, createManifest) {
 
         function nextTableName(type) {
             return type + '-' + pad(++seq) + '.json'
+        }
+
+        function pad(n) {
+            return zeros.substring(n.toString().length) + n;
+        }
+
+        function isEmpty(o) {
+            if (null == o) return true;
+            for (var k in o)
+                return false
+            return true
         }
 
         return db = {
@@ -92,22 +90,22 @@ module.exports = function (createSST, createMemtable, createManifest) {
 
                                 Promise.delay(1000).then(function(){
                                     resolve();
-                                })
+                                });
                             }
                         })
                     })
                 });
             },
             nextSnapshot: function (ary) {
-                _snapshot = ary
-                return db
+                _snapshot = ary;
+                return db;
             },
             snapshot: function () {
                 if (_snapshot) {
                     tables = _snapshot;
-                    _snapshot = null
+                    _snapshot = null;
                 }
-                return tables
+                return tables;
             },
             get: function (key) {
                 return new Promise(function(resolve, reject){
@@ -150,30 +148,18 @@ module.exports = function (createSST, createMemtable, createManifest) {
                 })
             },
             createReadStream: function (opts) {
-                //merge streams from all the tables
-                //it's probably okay to not have a snapshot on the memtable.
-                //hmm, on the other hand, it will be fairly cheap...
-                //otherwise I'd need to implement a skiplist, so you can have
-                //streams that handle inserts.
-
-                //TRACK HOW MANY ITERATORS ARE USING THIS SNAPSHOT.
-
-                //read snapshots on the memtable are very simple, because it just
-                //figures out the range sync and copies it to an array
-                //so that doesn't need to be tracked specially.
-
-                var tables = db.snapshot()
+                var tables = db.snapshot();
 
                 console.log('readStream',
                     tables.map(function (e) {
                         return e.location
                     })
-                )
+                );
 
-                var stream = tables[0].createReadStream(opts)
+                var stream = tables[0].createReadStream(opts);
                 for (var i = 1; i < tables.length; i++) {
-                    console.log('merge', tables[i].location)
-                    stream = merge(tables[i].createReadStream(opts), stream, u.compare)
+                    console.log('merge', tables[i].location);
+                    stream = merge(tables[i].createReadStream(opts), stream, u.compare);
                 }
                 return stream
             },
@@ -188,69 +174,50 @@ module.exports = function (createSST, createMemtable, createManifest) {
             },
 
             compact: function (cb) {
-                cb = cb || function () {
-                    }
-                //make a temp snapshot for use while compacting.
-                //only one compaction at a time.
-                if (compacting) return cb()
-                compacting = true
-                // create a new memtable, to save any writes while we are compacting.
-                // save it in the manifest FIRST. That way we can be sure that we don't
-                // loose that data if we crash while compacting.
+                cb = cb || function () {};
 
-                //add a new memtable to the manifest
-                var name = nextTableName('log')
-                var tables = db.snapshot()
+                if (compacting) return cb();
+
+                compacting = true;
+
+                var name = nextTableName('log');
+                var tables = db.snapshot();
 
                 function getNames(tables) {
                     return tables.map(function (e) {
-                        if (!e.location) throw new Error(e.type + 'table is missing location')
-                        return path.basename(e.location)
+                        if (!e.location) throw new Error(e.type + 'table is missing location');
+                        return path.basename(e.location);
                     })
                 }
 
-                var names = getNames(tables)
-                names.unshift(name)
-                var _memtable = createMemtable(path.join(location, name))
+                var names = getNames(tables);
+                names.unshift(name);
+                var _memtable = createMemtable(path.join(location, name));
                 _memtable.open(function (err) {
-                    //uphdate the mainfest to include the new memtable AND the old one.
-                    //this is so we don't forget any writes.
                     manifest.update({tables: names, seq: seq}, function (err) {
-                        if (err) return cb(err)
-                        if (err) return cb(err)
-                        //switch to the new memtable.
-                        var __memtable = memtable
-                        tables = db.snapshot()
-                        memtable = _memtable
-                        //wait for the old memtable to drain.
-                        tables[0].freeze(function () {
-                            db.nextSnapshot([memtable].concat(tables))
+                        if (err) return cb(err);
 
-                            //maybe the api for sst should have a write stream,
-                            //except it errors unles it's all in order,
-                            //and you can only use it once?
-                            var newSST = path.join(location, nextTableName('sst'))
-                            var _tables = tables.slice()
+                        var __memtable = memtable;
+                        tables = db.snapshot();
+                        memtable = _memtable;
+
+                        tables[0].freeze(function () {
+                            db.nextSnapshot([memtable].concat(tables));
+                            var newSST = path.join(location, nextTableName('sst'));
+                            var _tables = tables.slice();
                             _tables = compact(_tables, createSST.createStream(newSST, function (err, sst) {
-                                if (err) return cb(err)
-                                //now that we have generated the sst,
-                                //save the new table set in the manifest,
-                                //so that if the process crashes we will reload the right data.
-                                //hmm, maybe we could just start using it... sst table are immutable, anyway.
-                                //the most important thing to have right is the memtables.
-                                //when an sst is no longer used (been compacted + no more iterators)
-                                //then it's safe to delete.
-                                _tables = [memtable, sst].concat(_tables)
+                                if (err) return cb(err);
+                                _tables = [memtable, sst].concat(_tables);
                                 manifest.update({tables: getNames(_tables), seq: seq}, function (err) {
-                                    if (err) return cb(err)
-                                    compacting = false
-                                    db.nextSnapshot(_tables)
+                                    if (err) return cb(err);
+                                    compacting = false;
+                                    db.nextSnapshot(_tables);
                                     if (cb) cb()
-                                })
-                            }))
-                        })
-                    })
-                })
+                                });
+                            }));
+                        });
+                    });
+                });
             }
         }
     }
