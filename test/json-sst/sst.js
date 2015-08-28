@@ -24,5 +24,12 @@ describe('SST', function() {
                     result.location.should.be.eql(sstFile);
                 });
         });
+
+        it('check opened file length', function(){
+            return sortedTable.open()
+                .then(function(result){
+                    result._stat.length.should.be.eql(1);
+                });
+        });
     });
 });
