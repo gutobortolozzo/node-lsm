@@ -1,5 +1,7 @@
 # WIP
 
+[![Build Status](https://travis-ci.org/gutobortolozzo/node-lsm.svg?branch=master)](https://travis-ci.org/gutobortolozzo/node-lsm)
+
 # LSM, a log-structured-merge-tree, implemented in node.js.
 
 ``` js
