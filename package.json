@@ -1,6 +1,6 @@
 {
-  "name": "goatdb",
-  "description": "log structured merge tree in pure js",
+  "name": "node-lsm",
+  "description": "log structured merge tree in pure node.js",
   "version": "1.0.0",
   "homepage": "",
   "repository": {
@@ -33,6 +33,6 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha --recursive test/"
   },
-  "author": "",
+  "author": "Guto Bortolozzo",
   "license": "MIT"
 }

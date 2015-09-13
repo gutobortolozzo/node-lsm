@@ -2,7 +2,6 @@ require('should');
 var utils = require(process.cwd()+'/test/utils/test-commons');
 var sst = require(process.cwd()+'/src/json-sst/index');
 
-
 describe('SST', function() {
 
     var sstFile = utils.testDirectory+"/test.json";

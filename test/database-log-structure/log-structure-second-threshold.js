@@ -1,9 +1,9 @@
 require('should');
 var utils = require(process.cwd()+'/test/utils/test-commons');
 var Promise = require('bluebird');
-var GoatDB = require('../../index.js');
+var Subject = require('../../index.js');
 
-var db = GoatDB(utils.testDirectory, utils.options);
+var db = Subject(utils.testDirectory, utils.options);
 
 describe('LOG', function() {
 

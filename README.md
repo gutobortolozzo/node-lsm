@@ -1,51 +1,44 @@
-# GoatDb
+# WIP
 
-a log-structured-merge-tree, implemented in pure node.js. GOATSCALE!!!
-
-> dedicated to [@luk](https://twitter.com/luk)
-
-![img](http://i.imgur.com/7Na4XmH.gif)
-
-[BUT DOES IT SCALE?](http://a-big-goat.herokuapp.com/)
-
-Another goatscale db [locket](https://github.com/bigeasy/locket)
+# LSM, a log-structured-merge-tree, implemented in node.js.
 
 ``` js
-var GoatDB = require('goatdb')
+var lsm = Subject('/tmp/example', {
+    threshold : 1000 //optional
+});
 
-GoatDB('/tmp/goatdb-example').open(function (err, db) {
-  db.put('hello', 'I am a goat', function (err) {
-    db.put('whatevs', 'GOAT GOAT GOAT', function (err) {
-      db.get('hello', function (err, value) {
-        console.log(value)
-      })
-    })
-  })
-})
+lsm.open().then(function(){
+    return lsm.put('#12345', 'hello');
+}).then(function(){
+    return lsm.get('#12345');
+}).then(function(result){
+    console.log('result', result); // hello
+});
 ```
 
 everything is just line separated json!
 
 ``` js
-cat /tmp/goatdb-example/log-00000001.json
+cat /tmp/example/log-00000001.json
 ```
+
 contains this.
+
 ``` js
-{"key":"hello","value":"I am a goat","type":"put"}
-{"key":"whatevs","value":"GOAT GOAT GOAT","type":"put"}
+{"key":"hello","value":"HI","type":"put"}
+{"key":"what","value":"WHO","type":"put"}
 ```
 
-put more data in there and you'll get `sst` files too.
+put more data in there and you'll get ```SST``` files.
 
-# features
+# Features
 
-- GOATS
-- crude pass at the leveldown api.
-- probably lots of bugs.
+- ```PUT``` string key/value
+- ```GET``` string key/value
+- ```DEL``` string key/value
 
 # TODO
 
-- add more goats
-- be leveldown compatible
-- contrive benchmarks that goatdb will do really well at.
+- Support multiple lsm's opened pointing to the same data folder.
+- All operations promisify
 
