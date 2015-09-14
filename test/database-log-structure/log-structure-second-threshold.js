@@ -45,7 +45,7 @@ describe('LOG', function() {
             files.should.containEql('sst-0000000003.json');
         });
 
-        it('search for value to test integrite', function () {
+        it('search for value to test integration', function () {
             return db.get('#'+utils.options.threshold)
                 .then(function(value){
                     value.should.be.eql('hello '+utils.options.threshold);
