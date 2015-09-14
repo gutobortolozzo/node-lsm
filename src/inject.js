@@ -88,7 +88,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
                                     memtable = tables[0];
                                 }
 
-                                Promise.delay(1000).then(function(){
+                                Promise.delay(3000).then(function(){
                                     resolve();
                                 });
                             }
