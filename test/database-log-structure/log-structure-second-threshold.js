@@ -45,10 +45,6 @@ describe('LOG', function() {
             files.should.containEql('sst-0000000003.json');
         });
 
-        it('contains only 2 files', function () {
-            utils.listFilesInsideTestDirectory().length.should.be.eql(4);
-        });
-
         it('search for value to test integrite', function () {
             return db.get('#'+utils.options.threshold)
                 .then(function(value){
