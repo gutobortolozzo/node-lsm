@@ -49,7 +49,7 @@ module.exports = function (createSST, createMemtable, createManifest) {
                         manifest.open(function (err) {
                             if (err) return cb(err);
                             if (isEmpty(manifest.data)) {
-                                seq = 1;
+                                var seq = 1;
                                 var filename = path.join(location, 'log-' + pad(seq) + '.json');
                                 var _memtable = createMemtable(filename);
                                 manifest.update({tables: ['log-' + pad(seq) + '.json'], seq: seq}, function (err) {

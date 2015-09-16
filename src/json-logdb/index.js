@@ -139,7 +139,6 @@ module.exports = function (file, cb) {
                     pull.drain(null, done)
                 )
             });
-            return 1;
         },
         get: function (key, cb) {
             if(!ll.opened) return cb(new Error('not open: ' + ll.location));
