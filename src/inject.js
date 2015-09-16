@@ -163,16 +163,21 @@ module.exports = function (createSST, createMemtable, createManifest) {
                 }
                 return stream
             },
-            close: function (cb) {
-                pull(
-                    pull.values(db.snapshot()),
-                    para(function (db) {
-                        db.close(cb)
-                    }),
-                    pull.drain(cb)
-                )
+            close: function () {
+                return new Promise(function(resolve, reject){
+                    var cb = function(){};
+                    try{
+                        pull(pull.values(db.snapshot()),
+                            para(function() {
+                                resolve();
+                            }),
+                            pull.drain(cb)
+                        );
+                    } catch(err){
+                        reject(err);
+                    }
+                });
             },
-
             compact: function (cb) {
                 cb = cb || function () {};
 
